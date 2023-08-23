@@ -10,8 +10,9 @@ async function createBooking(data) {
       const flight = await axios.get(
         `${serverConfig.FLIGHT_SERVICE}/api/v1/flights/${data.flightId}`
       );
+      const flightData = flight.data.data;
       //check for seats
-      if (data.noOfSeats > flight.totalSeats) {
+      if (data.noOfSeats > flightData.totalSeats) {
         throw new appError(
           "required no of seats not available",
           StatusCodes.BAD_REQUEST
