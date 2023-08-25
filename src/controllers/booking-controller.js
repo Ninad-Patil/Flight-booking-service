@@ -12,8 +12,7 @@ async function createBooking(req, res) {
     successResponse.data = response;
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
-    console.log("thse error is this ", error);
-
+    console.log(error);
     ErrorResponse.error = error;
     return res.status(error.statusCode).json(ErrorResponse);
   }
