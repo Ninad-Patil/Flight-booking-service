@@ -4,6 +4,8 @@ const db = require("../models");
 const { serverConfig } = require("../config");
 const appError = require("../utils/errors/app-error");
 const { StatusCodes } = require("http-status-codes");
+const { Enums } = require("../utils/common");
+const { BOOKED, INITIATED, CANCELLED, PENDING } = Enums.BOOKING_STATUS;
 
 const bookingRepository = new BookingRepository();
 async function createBooking(data) {
@@ -42,4 +44,39 @@ async function createBooking(data) {
     throw error;
   }
 }
-module.exports = { createBooking };
+
+async function makePayment(data) {
+  const transaction = await db.sequelize.transaction();
+  try {
+    const bookingDetails = await bookingRepository.get(data.bookingId);
+
+    if (bookingDetails.totalCost != data.totalCost) {
+      console.log(data, typeof bookingDetails.totalCost, typeof data.totalCost);
+      throw new appError(
+        "the payment amount doesnt match",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    if (bookingDetails.userId != data.userId) {
+      throw new appError(
+        "the user does not match for the request",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    //we assume the payment to be successful
+    const response = await bookingRepository.update(
+      data.bookingId,
+      { status: BOOKED },
+      transaction
+    );
+    await transaction.commit();
+  } catch (error) {
+    error.statusCode = 400;
+    await transaction.rollback();
+    throw error;
+  }
+}
+
+module.exports = { createBooking, makePayment };
