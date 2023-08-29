@@ -119,6 +119,7 @@ async function cancelBooking(bookingId) {
   }
 }
 
+//user can complete the booking in 5 mins, after 5 mins cron job gets called.
 async function cancelOldBookings() {
   try {
     const time = new Date(Date.now() - 1000 * 300); //time 5 mins ago
